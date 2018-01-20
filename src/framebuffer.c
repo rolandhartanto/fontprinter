@@ -48,10 +48,6 @@ void clearScreen(int jumlahBaris, int jumlahKolom, int warna){
         }
     }
 }
-
-void beriWarna(int warna){
-
-}
     
 int main()
 {
@@ -94,15 +90,14 @@ int main()
 
     FILE *fp;
     int i,j;
-    char a[835][35];
+    char a[900][35];
     fp = fopen("../data/alphabet.txt","r");
     if(fp==NULL){
-        printf("tidak terbaca\n");
+        printf("File tidak ada\n");
         return 0;
     }
 
-    printf("file terbaca\n");
-    for(i=0;i<832;i++){
+    for(i=0;i<864;i++){
         fscanf(fp, "%s", a[i]);
     }
     
@@ -113,7 +108,7 @@ int main()
     printf("masukkan input kata\n");
 
     char input[1000];
-    scanf("%s",input);
+    scanf("%[^\n]s",input);
     int pjg = strlen(input);
 
     //clear screen putih
@@ -124,6 +119,8 @@ int main()
     for(i=0;i<pjg;i++){
         char kar = input[i];
         int absis = (kar-'A')*32, ordinat = 0; //menentukan indeks baris dan kolom dari array of char
+        if(kar==' '){absis = 832;}
+        
         for (y = idxBaris; y < idxBaris+32; y++){
             for (x = idxKolom; x < idxKolom+32; x++) {
 
