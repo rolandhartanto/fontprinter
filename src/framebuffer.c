@@ -18,15 +18,44 @@ http://cep.xor.aps.anl.gov/software/qt4-x11-4.2.2/qtopiacore-testingframebuffer.
 #include <sys/ioctl.h>
 #include <string.h>
 
+const int hitam = 0;
+const int putih = 255;
+
+int fbfd = 0;
+struct fb_var_screeninfo vinfo;
+struct fb_fix_screeninfo finfo;
+long int screensize = 0;
+char *fbp = 0;
+int x = 0, y = 0;
+long int location = 0;
+
+void clearScreen(int jumlahBaris, int jumlahKolom, int warna){
+    int x,y;
+    for (y = 0; y < jumlahBaris; y++){
+        for (x = 0; x < jumlahKolom; x++) {
+            location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
+                           (y+vinfo.yoffset) * finfo.line_length;
+
+                if (vinfo.bits_per_pixel == 32) {
+                    //printf("a[%d][%d]: %d\n",absis,ordinat,a[absis][ordinat]);
+                
+                    *(fbp + location) = warna;        // Some blue
+                    *(fbp + location + 1) = warna;     // A little green
+                    *(fbp + location + 2) = warna;    // A lot of red
+                    *(fbp + location + 3) = 0;      // No transparency    
+                    
+                }
+        }
+    }
+}
+
+void beriWarna(int warna){
+
+}
+    
 int main()
 {
-    int fbfd = 0;
-    struct fb_var_screeninfo vinfo;
-    struct fb_fix_screeninfo finfo;
-    long int screensize = 0;
-    char *fbp = 0;
-    int x = 0, y = 0;
-    long int location = 0;
+    
 
     // Open the file for reading and writing
     fbfd = open("/dev/fb0", O_RDWR);
@@ -76,66 +105,27 @@ int main()
     for(i=0;i<832;i++){
         fscanf(fp, "%s", a[i]);
     }
-
-    // printf("a:\n");
-    // for(i=0;i<832;i++){
-    //     for(j=0;j<32;j++){
-    //         printf("%c",a[i][j]);
-    //     }
-    //     printf("\n");
-    // }
-
-    // printf("%d\n",'A');
-
-    x = 0; y = 0;       // Where we are going to put the pixel
-    int idx = 0;
+    
     // Figure out where in memory to put the pixel
     //clear screen hitam
-    for (y = 0; y < 632; y++){
-        for (x = 0; x < 1920; x++) {
-            location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
-                           (y+vinfo.yoffset) * finfo.line_length;
-
-                if (vinfo.bits_per_pixel == 32) {
-                    //printf("a[%d][%d]: %d\n",absis,ordinat,a[absis][ordinat]);
-                
-                    *(fbp + location) = 0;        // Some blue
-                    *(fbp + location + 1) = 0;     // A little green
-                    *(fbp + location + 2) = 0;    // A lot of red
-                    *(fbp + location + 3) = 0;      // No transparency    
-                    
-                }
-        }
-    }
+    clearScreen(632, 1920, hitam);
+    
     printf("masukkan input kata\n");
 
-    char input[100];
+    char input[1000];
     scanf("%s",input);
     int pjg = strlen(input);
 
     //clear screen putih
-    for (y = 0; y < 632; y++){
-        for (x = 0; x < 1920; x++) {
-            location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
-                           (y+vinfo.yoffset) * finfo.line_length;
-
-                if (vinfo.bits_per_pixel == 32) {
-                    //printf("a[%d][%d]: %d\n",absis,ordinat,a[absis][ordinat]);
-                
-                    *(fbp + location) = 255;        // Some blue
-                    *(fbp + location + 1) = 255;     // A little green
-                    *(fbp + location + 2) = 255;    // A lot of red
-                    *(fbp + location + 3) = 0;      // No transparency    
-                    
-                }
-        }
-    }
+    clearScreen(632, 1920, putih);
+    
     int idxBaris = 0;
+    int idxKolom = 0;
     for(i=0;i<pjg;i++){
         char kar = input[i];
-        int absis = (kar-'A')*32, ordinat = 0;
+        int absis = (kar-'A')*32, ordinat = 0; //menentukan indeks baris dan kolom dari array of char
         for (y = idxBaris; y < idxBaris+32; y++){
-            for (x = idx; x < idx+32; x++) {
+            for (x = idxKolom; x < idxKolom+32; x++) {
 
                 location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
                            (y+vinfo.yoffset) * finfo.line_length;
@@ -143,14 +133,14 @@ int main()
                 if (vinfo.bits_per_pixel == 32) {
                     //printf("a[%d][%d]: %d\n",absis,ordinat,a[absis][ordinat]);
                     if(a[absis][ordinat]=='0'){
-                        *(fbp + location) = 255;        // Some blue
-                        *(fbp + location + 1) = 255;     // A little green
-                        *(fbp + location + 2) = 255;    // A lot of red
+                        *(fbp + location) = putih;        // Some blue
+                        *(fbp + location + 1) = putih;     // A little green
+                        *(fbp + location + 2) = putih;    // A lot of red
                         *(fbp + location + 3) = 0;      // No transparency    
                     }else{
-                        *(fbp + location) = 0;        // Some blue
-                        *(fbp + location + 1) = 0;     // A little green
-                        *(fbp + location + 2) = 0;    // A lot of red
+                        *(fbp + location) = hitam;        // Some blue
+                        *(fbp + location + 1) = hitam;     // A little green
+                        *(fbp + location + 2) = hitam;    // A lot of red
                         *(fbp + location + 3) = 0;      // No transparency    
                     }
                     ordinat++;
@@ -167,8 +157,8 @@ int main()
             absis++;
             ordinat = 0;
         }
-        idx+=32;
-        if(idx>=1920){idx = 0; idxBaris+=34;}
+        idxKolom+=32;
+        if(idxKolom>=1920){idxKolom = 0; idxBaris+=34;} //jika melebihi pixel column..lanjutkan di baris selanjutnya dan idxKolom direset jadi 0
     }
     
     
