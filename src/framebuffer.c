@@ -16,6 +16,7 @@ http://cep.xor.aps.anl.gov/software/qt4-x11-4.2.2/qtopiacore-testingframebuffer.
 #include <linux/fb.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+#include <string.h>
 
 int main()
 {
@@ -51,7 +52,7 @@ int main()
 
     // Figure out the size of the screen in bytes
     screensize = vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;
-
+    printf("screensize: %ld\n",screensize);
     // Map the device to memory
     fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
     if ((int)fbp == -1) {
@@ -60,30 +61,109 @@ int main()
     }
     printf("The framebuffer device was mapped to memory successfully.\n");
 
-    x = 100; y = 100;       // Where we are going to put the pixel
+    //membaca dari File
+    FILE *fp;
+    int i,j;
+    char a[35][35];
+    fp = fopen("../data/alphabet.txt","r");
+    if(fp==NULL){
+        printf("tidak terbaca\n");
+        return 0;
+    }
 
-    // Figure out where in memory to put the pixel
-    for (y = 100; y < 132; y++)
-        for (x = 100; x < 132; x++) {
-
-            location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
-                       (y+vinfo.yoffset) * finfo.line_length;
-
-            if (vinfo.bits_per_pixel == 32) {
-                *(fbp + location) = 255;        // Some blue
-                *(fbp + location + 1) = 255;     // A little green
-                *(fbp + location + 2) = 255;    // A lot of red
-                *(fbp + location + 3) = 0;      // No transparency
-        //location += 4;
-            } else  { //assume 16bpp
-                int b = 10;
-                int g = (x-100)/6;     // A little green
-                int r = 31-(y-100)/16;    // A lot of red
-                unsigned short int t = r<<11 | g << 5 | b;
-                *((unsigned short int*)(fbp + location)) = t;
-            }
-
+    printf("file terbaca\n");
+    for(i=0;i<32;i++){
+        
+        fscanf(fp, "%s", a[i]);
+        
+    }
+    printf("a:\n");
+    for(i=0;i<32;i++){
+        for(j=0;j<32;j++){
+            printf("%c",a[i][j]);
         }
+        printf("\n");
+    }
+
+    x = 0; y = 0;       // Where we are going to put the pixel
+    int idx = 0;
+    // Figure out where in memory to put the pixel
+    
+    printf("masukkan input kata\n");
+
+    char input[100];
+    scanf("%s",input);
+    int pjg = strlen(input);
+
+    //clear screen
+    // for (y = 0; y < 232; y++){
+    //     for (x = 0; x < 232; x++) {
+
+    //         location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
+    //                    (y+vinfo.yoffset) * finfo.line_length;
+
+    //         if (vinfo.bits_per_pixel == 32) {
+    //             //printf("a[%d][%d]: %d\n",absis,ordinat,a[absis][ordinat]);
+    //             //if(a[absis][ordinat]=='0'){
+    //                 *(fbp + location) = 255;        // Some blue
+    //                 *(fbp + location + 1) = 255;     // A little green
+    //                 *(fbp + location + 2) = 255;    // A lot of red
+    //                 *(fbp + location + 3) = 0;      // No transparency    
+    //             // }else{
+                    
+    //             // }
+    //             // ordinat++;
+    //     //location += 4;
+    //         } else  { //assume 16bpp
+    //             int b = 10;
+    //             int g = (x-100)/6;     // A little green
+    //             int r = 31-(y-100)/16;    // A lot of red
+    //             unsigned short int t = r<<11 | g << 5 | b;
+    //             *((unsigned short int*)(fbp + location)) = t;
+    //         }
+
+    //     }
+       
+    // }
+
+    for(i=0;i<pjg;i++){
+        int absis = 0, ordinat = 0;    
+        for (y = 0; y < 32; y++){
+            for (x = idx; x < idx+32; x++) {
+
+                location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
+                           (y+vinfo.yoffset) * finfo.line_length;
+
+                if (vinfo.bits_per_pixel == 32) {
+                    //printf("a[%d][%d]: %d\n",absis,ordinat,a[absis][ordinat]);
+                    if(a[absis][ordinat]=='0'){
+                        *(fbp + location) = 255;        // Some blue
+                        *(fbp + location + 1) = 255;     // A little green
+                        *(fbp + location + 2) = 255;    // A lot of red
+                        *(fbp + location + 3) = 0;      // No transparency    
+                    }else{
+                        *(fbp + location) = 0;        // Some blue
+                        *(fbp + location + 1) = 0;     // A little green
+                        *(fbp + location + 2) = 0;    // A lot of red
+                        *(fbp + location + 3) = 0;      // No transparency    
+                    }
+                    ordinat++;
+            //location += 4;
+                } else  { //assume 16bpp
+                    int b = 10;
+                    int g = (x-100)/6;     // A little green
+                    int r = 31-(y-100)/16;    // A lot of red
+                    unsigned short int t = r<<11 | g << 5 | b;
+                    *((unsigned short int*)(fbp + location)) = t;
+                }
+
+            }
+            absis++;
+            ordinat = 0;
+        }
+        idx+=32;
+    }
+    
     munmap(fbp, screensize);
     close(fbfd);
     return 0;
