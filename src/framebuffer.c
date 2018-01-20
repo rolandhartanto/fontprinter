@@ -62,9 +62,10 @@ int main()
     printf("The framebuffer device was mapped to memory successfully.\n");
 
     //membaca dari File
+
     FILE *fp;
     int i,j;
-    char a[35][35];
+    char a[835][35];
     fp = fopen("../data/alphabet.txt","r");
     if(fp==NULL){
         printf("tidak terbaca\n");
@@ -72,63 +73,68 @@ int main()
     }
 
     printf("file terbaca\n");
-    for(i=0;i<32;i++){
-        
+    for(i=0;i<832;i++){
         fscanf(fp, "%s", a[i]);
-        
     }
-    printf("a:\n");
-    for(i=0;i<32;i++){
-        for(j=0;j<32;j++){
-            printf("%c",a[i][j]);
-        }
-        printf("\n");
-    }
+
+    // printf("a:\n");
+    // for(i=0;i<832;i++){
+    //     for(j=0;j<32;j++){
+    //         printf("%c",a[i][j]);
+    //     }
+    //     printf("\n");
+    // }
+
+    // printf("%d\n",'A');
 
     x = 0; y = 0;       // Where we are going to put the pixel
     int idx = 0;
     // Figure out where in memory to put the pixel
-    
+    //clear screen hitam
+    for (y = 0; y < 632; y++){
+        for (x = 0; x < 1920; x++) {
+            location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
+                           (y+vinfo.yoffset) * finfo.line_length;
+
+                if (vinfo.bits_per_pixel == 32) {
+                    //printf("a[%d][%d]: %d\n",absis,ordinat,a[absis][ordinat]);
+                
+                    *(fbp + location) = 0;        // Some blue
+                    *(fbp + location + 1) = 0;     // A little green
+                    *(fbp + location + 2) = 0;    // A lot of red
+                    *(fbp + location + 3) = 0;      // No transparency    
+                    
+                }
+        }
+    }
     printf("masukkan input kata\n");
 
     char input[100];
     scanf("%s",input);
     int pjg = strlen(input);
 
-    //clear screen
-    // for (y = 0; y < 232; y++){
-    //     for (x = 0; x < 232; x++) {
+    //clear screen putih
+    for (y = 0; y < 632; y++){
+        for (x = 0; x < 1920; x++) {
+            location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
+                           (y+vinfo.yoffset) * finfo.line_length;
 
-    //         location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
-    //                    (y+vinfo.yoffset) * finfo.line_length;
-
-    //         if (vinfo.bits_per_pixel == 32) {
-    //             //printf("a[%d][%d]: %d\n",absis,ordinat,a[absis][ordinat]);
-    //             //if(a[absis][ordinat]=='0'){
-    //                 *(fbp + location) = 255;        // Some blue
-    //                 *(fbp + location + 1) = 255;     // A little green
-    //                 *(fbp + location + 2) = 255;    // A lot of red
-    //                 *(fbp + location + 3) = 0;      // No transparency    
-    //             // }else{
+                if (vinfo.bits_per_pixel == 32) {
+                    //printf("a[%d][%d]: %d\n",absis,ordinat,a[absis][ordinat]);
+                
+                    *(fbp + location) = 255;        // Some blue
+                    *(fbp + location + 1) = 255;     // A little green
+                    *(fbp + location + 2) = 255;    // A lot of red
+                    *(fbp + location + 3) = 0;      // No transparency    
                     
-    //             // }
-    //             // ordinat++;
-    //     //location += 4;
-    //         } else  { //assume 16bpp
-    //             int b = 10;
-    //             int g = (x-100)/6;     // A little green
-    //             int r = 31-(y-100)/16;    // A lot of red
-    //             unsigned short int t = r<<11 | g << 5 | b;
-    //             *((unsigned short int*)(fbp + location)) = t;
-    //         }
-
-    //     }
-       
-    // }
-
+                }
+        }
+    }
+    int idxBaris = 0;
     for(i=0;i<pjg;i++){
-        int absis = 0, ordinat = 0;    
-        for (y = 0; y < 32; y++){
+        char kar = input[i];
+        int absis = (kar-'A')*32, ordinat = 0;
+        for (y = idxBaris; y < idxBaris+32; y++){
             for (x = idx; x < idx+32; x++) {
 
                 location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
@@ -162,8 +168,11 @@ int main()
             ordinat = 0;
         }
         idx+=32;
+        if(idx>=1920){idx = 0; idxBaris+=34;}
     }
     
+    
+
     munmap(fbp, screensize);
     close(fbfd);
     return 0;
